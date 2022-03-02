@@ -8,6 +8,11 @@ def get_blueprint():
     return REQUEST_API
 
 
+ONE_ORDER = {
+    'title': u'Good Book',
+    'email': u'testuser1@test.com',
+    'timestamp': (datetime.today() - timedelta(1)).timestamp()
+}
 
 ORDER_REQUESTS = {
     "8c36e86c-13b9-4102-a44f-646015dfd981": {
@@ -29,8 +34,22 @@ def get_records():
     @return: 200: an array of all known BOOK_REQUESTS as a \
     flask/response object with application/json mimetype.
     """
-    if request.method=='GET':
+    if request.method == 'GET':
         return jsonify(ORDER_REQUESTS)
-    else :
+    else:
+        print(request.get_json())
         return "ok"
 
+
+@REQUEST_API.route('/orders/<id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def handle_order(id):
+    if request.method == "GET":
+        return jsonify(ONE_ORDER), 200
+    elif request.method == "POST":
+        return "ok"
+    elif request.method == "PUT":
+        return "ok"
+    elif request.method == "DELETE":
+        return "ok"
+    else:
+        return "not ok"
