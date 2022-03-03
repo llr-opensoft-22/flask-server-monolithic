@@ -4,3 +4,5 @@
 <li>pip install -r requirements.txt</li>
 <li>python app.py</li>
 </ul>
+
+# host url is in static/api.json

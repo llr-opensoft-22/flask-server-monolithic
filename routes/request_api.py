@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from datetime import datetime, timedelta
 REQUEST_API = Blueprint('request_api', __name__)
 
@@ -50,6 +50,8 @@ def handle_order(id):
     elif request.method == "PUT":
         return "ok"
     elif request.method == "DELETE":
+        if id not in ["temp", "test", "1"]:
+            abort(404)
         return "ok"
     else:
         return "not ok"

@@ -8,7 +8,7 @@ from routes import request_api
 APP = Flask(__name__)
 
 ### swagger specific ###
-SWAGGER_URL = '/swagger'
+SWAGGER_URL = '/docs'
 API_URL = '/static/api.json'
 SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
