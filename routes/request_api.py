@@ -1,6 +1,10 @@
+from crypt import methods
 from flask import Blueprint, jsonify, request, abort
 from datetime import datetime, timedelta
 REQUEST_API = Blueprint('request_api', __name__)
+from db.firebasedb import *
+import psycopg2
+# user=postgres password="kamal" host=db.tlagwlowvabyydvzipai.supabase.co port=5432 database=postgres
 
 
 def get_blueprint():
@@ -35,7 +39,7 @@ def get_records():
     flask/response object with application/json mimetype.
     """
     if request.method == 'GET':
-        return jsonify(ORDER_REQUESTS)
+        return jsonify(get_all_orders())
     else:
         print(request.get_json())
         return "ok"
@@ -44,7 +48,7 @@ def get_records():
 @REQUEST_API.route('/orders/<id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def handle_order(id):
     if request.method == "GET":
-        return jsonify(ONE_ORDER), 200
+        return jsonify(get_one_order()), 200
     elif request.method == "POST":
         return "ok"
     elif request.method == "PUT":
@@ -55,3 +59,29 @@ def handle_order(id):
         return "ok"
     else:
         return "not ok"
+
+@REQUEST_API.route('/user',methods=['POST'])
+def handle_create_user():
+    if request.method=="POST":
+        return "ok"
+
+
+@REQUEST_API.route('/user/login',methods=['GET'])
+def handle_login():
+    if request.method=="POST":
+        return "ok"
+
+@REQUEST_API.route('/user/logout',methods=['GET'])
+def handle_logout():
+    if request.method=="POST":
+        return "ok"
+
+
+@REQUEST_API.route('/user/<userid>',methods=['GET', 'PUT', 'DELETE'])
+def handle_user(userid):
+    if request.method=="GET":
+        return "ok"
+    elif request.method=="PUT":
+        return "ok"
+    elif request.method=="DELETE":
+        return "ok"
