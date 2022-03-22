@@ -7,6 +7,7 @@ from routes import request_api
 
 APP = Flask(__name__)
 
+
 ### swagger specific ###
 SWAGGER_URL = '/docs'
 API_URL = '/static/api.json'

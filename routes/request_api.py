@@ -1,10 +1,24 @@
 from crypt import methods
-from flask import Blueprint, jsonify, request, abort
+import errno
+import re
+from flask import Blueprint, jsonify, request, abort, Response
 from datetime import datetime, timedelta
+from supabase_client import Client
+import asyncio
+import prometheus_client
+
+
+
 REQUEST_API = Blueprint('request_api', __name__)
-from db.firebasedb import *
-import psycopg2
-# user=postgres password="kamal" host=db.tlagwlowvabyydvzipai.supabase.co port=5432 database=postgres
+
+url= 'https://tlagwlowvabyydvzipai.supabase.co'
+key= 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsYWd3bG93dmFieXlkdnppcGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDY3NjY2MDksImV4cCI6MTk2MjM0MjYwOX0.jicG5Cyvw7wW7Sw_lkHQVqv6cEogH0YJzR_GrL7HEXM'
+supabase = Client( 
+	api_url=url,
+	api_key=key
+)
+
+
 
 
 def get_blueprint():
@@ -18,56 +32,44 @@ ONE_ORDER = {
     'timestamp': (datetime.today() - timedelta(1)).timestamp()
 }
 
-ORDER_REQUESTS = {
-    "8c36e86c-13b9-4102-a44f-646015dfd981": {
-        'title': u'Good Book',
-        'email': u'testuser1@test.com',
-        'timestamp': (datetime.today() - timedelta(1)).timestamp()
-    },
-    "04cfc704-acb2-40af-a8d3-4611fab54ada": {
-        'title': u'Bad Book',
-        'email': u'testuser2@test.com',
-        'timestamp': (datetime.today() - timedelta(2)).timestamp()
-    }
-}
+
 
 
 @REQUEST_API.route('/orders', methods=['GET', 'POST'])
-def get_records():
-    """Return all book requests
-    @return: 200: an array of all known BOOK_REQUESTS as a \
-    flask/response object with application/json mimetype.
-    """
+async def get_records():
     if request.method == 'GET':
-        return jsonify(get_all_orders())
+        error, result = await(supabase.table("order").limit(30).select("*").query())
+        return jsonify(result)
     else:
-        print(request.get_json())
-        return "ok"
+        error, result = await(supabase.table("order").insert([request.get_json()]))
+        return jsonify(result)
 
 
 @REQUEST_API.route('/orders/<id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def handle_order(id):
+async def handle_order(id):
     if request.method == "GET":
-        return jsonify(get_one_order()), 200
-    elif request.method == "POST":
-        return "ok"
+        error, data = await supabase.table("order").select("*").eq('id',id).query()
+        if(error):
+            data=error
+        return jsonify(data)
     elif request.method == "PUT":
         return "ok"
     elif request.method == "DELETE":
-        if id not in ["temp", "test", "1"]:
-            abort(404)
-        return "ok"
+        error, data = await supabase.table("order").delete({'id':id})
+        
+        return jsonify(data)
     else:
         return "not ok"
 
 @REQUEST_API.route('/user',methods=['POST'])
 def handle_create_user():
     if request.method=="POST":
-        return "ok"
+        return supabase.table("user").insert(request.get_json())
 
 
 @REQUEST_API.route('/user/login',methods=['GET'])
 def handle_login():
+    # cur.execute('SELECT version()')
     if request.method=="POST":
         return "ok"
 
@@ -78,10 +80,42 @@ def handle_logout():
 
 
 @REQUEST_API.route('/user/<userid>',methods=['GET', 'PUT', 'DELETE'])
-def handle_user(userid):
+async def handle_user(userid):
     if request.method=="GET":
-        return "ok"
+        error, data = await (supabase.table("user").select("*").eq('id',id).query())
+        return jsonify(data)
     elif request.method=="PUT":
         return "ok"
     elif request.method=="DELETE":
+        error, data = await supabase.table("user").delete({'id':id})
+        return jsonify(data)
+
+
+
+@REQUEST_API.route('/delivery',methods=['POST','GET'])
+async def handle_all_delivery():
+    if request.method=="GET":
+        error , data = await(supabase.table("delivery").select("*").query())
+        return jsonify(data)
+    elif request.method=="POST":
+        error, result = await(supabase.table("delivery").insert([request.get_json()]))
+        return jsonify(result)
+
+
+@REQUEST_API.route('/delivery/<deliveryid>',methods=['GET', 'PUT', 'DELETE'])
+async def handle_delivery(deliveryid):
+    if request.method=="GET":
+        error, data = await (supabase.table("delivery").select("*").eq('id',deliveryid).query())
+        return jsonify(data)
+    elif request.method=="PUT":
         return "ok"
+    elif request.method=="DELETE":
+        error, data = await supabase.table("delivery").delete({'id':deliveryid})
+        return jsonify(data)
+
+
+CONTENT_TYPE_LATEST = str('text/plain; version=0.0.4; charset=utf-8')
+
+@REQUEST_API.route('/metrics', methods=['GET'])
+async def metrics():
+    return Response(prometheus_client.generate_latest(), mimetype=CONTENT_TYPE_LATEST)
