@@ -18,11 +18,12 @@ spec:
     spec:
       containers:
       - name: flaskapp
-        image: flaskimage
-        imagePullPolicy: Never
+        image: dinchakpooja/flask-swagger:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
-
+      volumes:
+      - name: ca-certs
 ---
 apiVersion: v1
 kind: Service
@@ -35,6 +36,7 @@ spec:
   - port: 8000
     protocol: TCP
     name: flask
+    targetPort: 8000
   selector:
     app: flask
-  type: LoadBalancer
+  type: ClusterIP
