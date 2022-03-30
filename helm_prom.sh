@@ -1,0 +1,1 @@
+helm install --set prometheus.service.nodePort=30000 --set prometheus.service.type=NodePort prometheus prometheus-community/kube-prometheus-stack

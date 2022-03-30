@@ -39,4 +39,4 @@ spec:
     targetPort: 8000
   selector:
     app: flask
-  type: ClusterIP
+  type: LoadBalancer
